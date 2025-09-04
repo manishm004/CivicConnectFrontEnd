@@ -7,7 +7,6 @@ import {
   Image, 
   useColorScheme,
   StatusBar,
-  SafeAreaView,
   Text,
   StyleSheet,
   ActivityIndicator
@@ -16,6 +15,13 @@ import { useFonts } from 'expo-font';
 import { Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { Raleway_700Bold } from '@expo-google-fonts/raleway';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Instead of importing Config from 'react-native-config', we use process.env directly.
+// Make sure your .env file uses keys with the EXPO_PUBLIC_ prefix.
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const POLICY_API_PORT = process.env.EXPO_PUBLIC_POLICY_API_PORT;
+const GOV_API_PORT = process.env.EXPO_PUBLIC_GOV_API_PORT;
+const LOGIN_API_PORT = process.env.EXPO_PUBLIC_LOGIN_API_PORT;
 
 export default function TabLayout() {
   const [darkMode, setDarkMode] = useState(false);
@@ -33,9 +39,10 @@ export default function TabLayout() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('http://192.168.0.109:5000/api/check-auth', {
-          credentials: 'include'
-        });
+        const response = await fetch(
+          `${API_BASE_URL}:${LOGIN_API_PORT}/api/check-auth`,
+          { credentials: 'include' }
+        );
         const data = await response.json();
         setIsAuthenticated(data.authenticated);
       } catch (error) {
@@ -98,7 +105,9 @@ export default function TabLayout() {
             source={require('../../assets/logo_no_bg.png')} 
             style={styles.logo}
           />
-          <Text style={[styles.headerTitle, { color: currentColors.text }]}>CivicConnect</Text>
+          <Text style={[styles.headerTitle, { color: currentColors.text }]}>
+            CivicConnect
+          </Text>
         </View>
       </View>
 
@@ -140,27 +149,27 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <Ionicons name="chatbubble-outline" size={24} color={color} />,
           }}
         />
-          <Tabs.Screen 
-            name="communities" 
-            options={{
-              title: 'Communities',
-              tabBarIcon: ({ color }) => <Ionicons name="people-outline" size={24} color={color} />,
-            }}
-          />
-          <Tabs.Screen 
-            name="profile" 
-            options={{
-              title: 'Profile',
-              tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
-            }}
-          />
-          <Tabs.Screen 
-            name="login" 
-            options={{
-              title: 'Login',
-              tabBarIcon: ({ color }) => <Ionicons name="log-in-outline" size={24} color={color} />,
-            }}
-          />
+        <Tabs.Screen 
+          name="communities" 
+          options={{
+            title: 'Communities',
+            tabBarIcon: ({ color }) => <Ionicons name="people-outline" size={24} color={color} />,
+          }}
+        />
+        <Tabs.Screen 
+          name="profile" 
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+          }}
+        />
+        <Tabs.Screen 
+          name="login" 
+          options={{
+            title: 'Login',
+            tabBarIcon: ({ color }) => <Ionicons name="log-in-outline" size={24} color={color} />,
+          }}
+        />
       </Tabs>
     </View>
   );
@@ -189,3 +198,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Raleway_700Bold',
   },
 });
+
+export default TabLayout;

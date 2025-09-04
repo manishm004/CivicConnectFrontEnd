@@ -16,6 +16,10 @@ import {
 import { useLocalSearchParams, router } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const POLICY_API_PORT = process.env.EXPO_PUBLIC_POLICY_API_PORT;
+const GOV_API_PORT = process.env.EXPO_PUBLIC_GOV_API_PORT;
+const LOGIN_API_PORT = process.env.EXPO_PUBLIC_LOGIN_API_PORT;
 
 interface Government {
   government_id: number;
@@ -57,8 +61,29 @@ const GovernmentDetail = () => {
   const [newComplaint, setNewComplaint] = useState({
     category: '',
     description: '',
-    multimedia_urls: [''],
+    multimedia: [] as { uri: string; name: string; type: string }[],
   });
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+  
+    if (!result.canceled && result.assets.length > 0) {
+      const asset = result.assets[0];
+      const image = {
+        uri: asset.uri,
+        name: asset.uri.split('/').pop() || `image_${Date.now()}.jpg`,
+        type: 'image/jpeg',
+      };
+  
+      setNewComplaint(prev => ({
+        ...prev,
+        multimedia: [...prev.multimedia, image],
+      }));
+    }
+  };
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState({
     gov: true,
@@ -69,16 +94,16 @@ const GovernmentDetail = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const govRes = await fetch(`http://192.168.0.109:5004/localgovernments`);
+        const govRes = await fetch(`${API_BASE_URL}:${GOV_API_PORT}/localgovernments`);
         const govData = await govRes.json();
         const foundGov = (govData.data || []).find((g: Government) => g.government_id.toString() === id);
         setGovernment(foundGov || null);
 
-        const artRes = await fetch(`http://192.168.0.109:5004/articles/${id}`);
+        const artRes = await fetch(`${API_BASE_URL}:${GOV_API_PORT}/articles/${id}`);
         const artData = await artRes.json();
         setArticles(artData.data || []);
 
-        const compRes = await fetch(`http://192.168.0.109:5004/complaints/${id}`);
+        const compRes = await fetch(`${API_BASE_URL}:${GOV_API_PORT}/complaints/${id}`);
         const compData = await compRes.json();
         setComplaints(compData.data || []);
 
@@ -102,31 +127,36 @@ const GovernmentDetail = () => {
   const handleSubmitComplaint = async () => {
     try {
       setSubmitting(true);
-      
-      const complaintData = {
-        government_id: Number(id),
-        category: newComplaint.category,
-        description: newComplaint.description,
-        multimedia_urls: newComplaint.multimedia_urls.filter(url => url.trim() !== ''),
-        status: "Pending"
-      };
-
-      const response = await fetch('http://192.168.0.109:5004/complaints', {
+  
+      const formData = new FormData();
+      formData.append('government_id', String(id));
+      formData.append('category', newComplaint.category);
+      formData.append('description', newComplaint.description);
+      formData.append('status', 'Pending');
+  
+      newComplaint.multimedia.forEach((image, index) => {
+        formData.append('images', {
+          uri: image.uri,
+          name: image.name,
+          type: image.type,
+        } as any); // React Native FormData image
+      });
+  
+      const response = await fetch(`${API_BASE_URL}:${GOV_API_PORT}/complaints`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
         },
-        body: JSON.stringify(complaintData),
+        body: formData,
       });
-
+  
       if (!response.ok) throw new Error('Submission failed');
-      
+  
       Alert.alert('Success', 'Complaint submitted successfully!');
       setShowComplaintModal(false);
-      setNewComplaint({ category: '', description: '', multimedia_urls: ['']});
-      
+      setNewComplaint({ category: '', description: '', multimedia: [] });
     } catch (error) {
-      Alert.alert('Error', 'Failed to submit complaint. Please try again.');
+      Alert.alert('Error', 'Failed to submit complaint.');
     } finally {
       setSubmitting(false);
     }
@@ -375,31 +405,24 @@ const GovernmentDetail = () => {
             onChangeText={text => setNewComplaint({...newComplaint, description: text})}
           />
 
-          <Text style={styles.inputLabel}>Image URLs (one per line)</Text>
-          {newComplaint.multimedia_urls.map((url, index) => (
-            <TextInput
-              key={index}
-              style={styles.input}
-              placeholder={`Image URL #${index + 1}`}
-              value={url}
-              onChangeText={text => {
-                const newUrls = [...newComplaint.multimedia_urls];
-                newUrls[index] = text;
-                setNewComplaint({...newComplaint, multimedia_urls: newUrls});
-              }}
-            />
-          ))}
+          {/* Image Picker */}
+          <Text style={styles.inputLabel}>Attach Images</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {newComplaint.multimedia.map((image, index) => (
+              <Image
+                key={index}
+                source={{ uri: image.uri }}
+                style={{ width: 100, height: 100, margin: 5, borderRadius: 5 }}
+              />
+            ))}
+          </View>
 
-          <TouchableOpacity
-            style={styles.addUrlButton}
-            onPress={() => setNewComplaint({
-              ...newComplaint,
-              multimedia_urls: [...newComplaint.multimedia_urls, '']
-            })}
-          >
-            <Text style={styles.addUrlText}>+ Add Another Image URL</Text>
+          {/* Button to pick image */}
+          <TouchableOpacity style={styles.addUrlButton} onPress={pickImage}>
+            <Text style={styles.addUrlText}>+ Pick Image</Text>
           </TouchableOpacity>
 
+          {/* Submit Button */}
           <TouchableOpacity
             style={styles.submitButton}
             onPress={handleSubmitComplaint}
@@ -413,6 +436,7 @@ const GovernmentDetail = () => {
           </TouchableOpacity>
         </ScrollView>
       </Modal>
+
     </ScrollView>
   );
 };

@@ -16,7 +16,10 @@ import { Raleway_600SemiBold, Raleway_700Bold } from '@expo-google-fonts/raleway
 import { Montserrat_400Regular } from '@expo-google-fonts/montserrat';
 import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
-
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const POLICY_API_PORT = process.env.EXPO_PUBLIC_POLICY_API_PORT;
+const GOV_API_PORT = process.env.EXPO_PUBLIC_GOV_API_PORT;
+const LOGIN_API_PORT = process.env.EXPO_PUBLIC_LOGIN_API_PORT;
 const lightColors = {
   primary: '#4361ee',
   secondary: '#3a0ca3',
@@ -73,7 +76,7 @@ const ProfileScreen = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch('http://192.168.0.109:5000/api/check-auth', {
+        const response = await fetch(`${API_BASE_URL}:${LOGIN_API_PORT}/api/check-auth`, {
           credentials: 'include',
         });
         
@@ -100,7 +103,7 @@ const ProfileScreen = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://192.168.0.109:5000/api/logout', {
+      const response = await fetch(`${API_BASE_URL}:${LOGIN_API_PORT}/api/logout`, {
         method: 'POST',
         credentials: 'include',
       });

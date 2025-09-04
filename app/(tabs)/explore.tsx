@@ -13,6 +13,10 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import axios from 'axios';
 import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const POLICY_API_PORT = process.env.EXPO_PUBLIC_POLICY_API_PORT;
+const GOV_API_PORT = process.env.EXPO_PUBLIC_GOV_API_PORT;
+const LOGIN_API_PORT = process.env.EXPO_PUBLIC_LOGIN_API_PORT;
 
 export default function ExploreScreen() {
   const [messages, setMessages] = useState([
@@ -42,7 +46,7 @@ export default function ExploreScreen() {
 
     try {
       const response = await axios.post(
-        'http://192.168.0.109:5000/assistant/ask',
+        `${API_BASE_URL}:${LOGIN_API_PORT}/assistant/ask`,
         { query: inputText },
         { withCredentials: true }
       );

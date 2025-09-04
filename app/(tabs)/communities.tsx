@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router'; // ✅ Use Expo Router
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const POLICY_API_PORT = process.env.EXPO_PUBLIC_POLICY_API_PORT;
+const GOV_API_PORT = process.env.EXPO_PUBLIC_GOV_API_PORT;
+const LOGIN_API_PORT = process.env.EXPO_PUBLIC_LOGIN_API_PORT;
 
 interface Community {
   government_id: number;
@@ -18,7 +22,7 @@ const Communities = () => {
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
-        const response = await fetch('http://192.168.0.109:5004/localgovernments');
+        const response = await fetch(`${API_BASE_URL}:${GOV_API_PORT}/localgovernments`);
         const data = await response.json();
         
         if (data.success) {

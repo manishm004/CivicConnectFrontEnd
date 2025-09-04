@@ -7,6 +7,10 @@ import * as Speech from 'expo-speech';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const POLICY_API_PORT = process.env.EXPO_PUBLIC_POLICY_API_PORT;
+const GOV_API_PORT = process.env.EXPO_PUBLIC_GOV_API_PORT;
+const LOGIN_API_PORT = process.env.EXPO_PUBLIC_LOGIN_API_PORT;
 type MenuItem = {
   label: string;
   submenu?: MenuItem[];
@@ -19,7 +23,7 @@ const mainMenu: MenuItem[] = [
     label: 'Tell me a random government policy or scheme.',
     onSelect: async () => {
       try {
-        const response = await fetch('http://192.168.0.109:5001/policies/random');
+        const response = await fetch(`${API_BASE_URL}:${POLICY_API_PORT}/policies/random`);
         const data = await response.json();
         return data.success 
           ? `${data.data.name}: ${data.data.description}`

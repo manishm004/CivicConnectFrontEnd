@@ -14,6 +14,10 @@ import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const POLICY_API_PORT = process.env.EXPO_PUBLIC_POLICY_API_PORT;
+const GOV_API_PORT = process.env.EXPO_PUBLIC_GOV_API_PORT;
+const LOGIN_API_PORT = process.env.EXPO_PUBLIC_LOGIN_API_PORT;
 
 export default function LoginScreen() {
   const [aadharNo, setAadharNo] = useState('');
@@ -36,7 +40,7 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://192.168.0.109:5000/api/login', {
+      const response = await fetch(`${API_BASE_URL}:${LOGIN_API_PORT}/api/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

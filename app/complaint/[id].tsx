@@ -13,6 +13,10 @@ import {
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const POLICY_API_PORT = process.env.EXPO_PUBLIC_POLICY_API_PORT;
+const GOV_API_PORT = process.env.EXPO_PUBLIC_GOV_API_PORT;
+const LOGIN_API_PORT = process.env.EXPO_PUBLIC_LOGIN_API_PORT;
 
 interface ComplaintDetails {
   complaint_id: number;
@@ -76,7 +80,7 @@ const handleUpvote = async () => {
         setHasDownvoted(false);
       }
   
-      const response = await fetch(`http://192.168.0.109:5004/complaints/${id}/upvote`, {
+      const response = await fetch(`${API_BASE_URL}:${GOV_API_PORT}/complaints/${id}/upvote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,7 +111,7 @@ const handleUpvote = async () => {
         setHasUpvoted(false);
       }
   
-      const response = await fetch(`http://192.168.0.109:5004/complaints/${id}/downvote`, {
+      const response = await fetch(`${API_BASE_URL}:${GOV_API_PORT}/complaints/${id}/downvote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,9 +136,9 @@ const handleUpvote = async () => {
     const fetchData = async () => {
       try {
         const [complaintRes, commentsRes, actionsRes] = await Promise.all([
-          fetch(`http://192.168.0.109:5004/complaints/getDetails/${id}`),
-          fetch(`http://192.168.0.109:5004/complaints/${id}/comments`),
-          fetch(`http://192.168.0.109:5004/complaints/${id}/actions`)
+          fetch(`${API_BASE_URL}:${GOV_API_PORT}/complaints/getDetails/${id}`),
+          fetch(`${API_BASE_URL}:${GOV_API_PORT}/complaints/${id}/comments`),
+          fetch(`${API_BASE_URL}:${GOV_API_PORT}/${id}/actions`)
         ]);
 
         const complaintData = await complaintRes.json();
@@ -161,7 +165,7 @@ const handleUpvote = async () => {
     
     try {
       setCommentLoading(true);
-      const response = await fetch('http://192.168.0.109:5004/complaints/comments', {
+      const response = await fetch(`${API_BASE_URL}:${GOV_API_PORT}/complaints/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ complaint_id: id, content: newComment })
